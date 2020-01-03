@@ -565,6 +565,10 @@ export function createDataDef(
         if (targetGraphQLType === null || targetGraphQLType === 'object') {
           def.subDefinitions = []
 
+          // TODO
+          // if (Array.isArray(consolidatedSchema.oneOf)) {
+
+          // }
           consolidatedSchema.oneOf.forEach(subSchema => {
             // Dereference subSchema
             let fromRef: string
@@ -596,13 +600,11 @@ export function createDataDef(
               )
               ;(def.subDefinitions as DataDefinition[]).push(subDefinition)
             } else {
-              // TODO: mitigation default JSON type
-
               handleWarning({
                 typeKey: 'COMBINE_SCHEMAS',
                 message:
                   `Schema '${JSON.stringify(schema)}' contains 'oneOf' so ` +
-                  `create a GraphQL union type schema '${JSON.stringify(
+                  `create a GraphQL union type but subschema '${JSON.stringify(
                     subSchema
                   )}' ` +
                   `is not an object type and union member types must be ` +
@@ -613,7 +615,25 @@ export function createDataDef(
             }
           })
 
-          def.targetGraphQLType = 'union'
+          // Not all subschemas may have been turned into GraphQL member types
+          if (def.subDefinitions.length > 0) {
+            def.targetGraphQLType = 'union'
+          } else {
+            handleWarning({
+              typeKey: 'COMBINE_SCHEMAS',
+              message:
+                `Schema '${JSON.stringify(schema)}' contains 'oneOf' so ` +
+                `create a GraphQL union type but all subschemas are not` +
+                `object types and union member types must be object types.`,
+              mitigationAddendum: `Create arbitrary JSON type instead.`,
+              data,
+              log: preprocessingLog
+            })
+
+            // Default arbitrary JSON type
+            def.targetGraphQLType = 'json'
+          }
+
           return def
         } else {
           // The parent schema is incompatible with the member schemas
@@ -677,11 +697,13 @@ export function createDataDef(
           } = {}
           const incompatibleProperties = new Set<string>()
 
-          Object.keys(consolidatedSchema.properties).forEach(propertyName => {
-            allProperties[propertyName] = [
-              consolidatedSchema.properties[propertyName]
-            ]
-          })
+          if (Array.isArray(consolidatedSchema.properties)) {
+            Object.keys(consolidatedSchema.properties).forEach(propertyName => {
+              allProperties[propertyName] = [
+                consolidatedSchema.properties[propertyName]
+              ]
+            })
+          }
 
           // Check if any member schema has conflicting properties
           anyOfData.allProperties.forEach(properties => {
@@ -706,6 +728,7 @@ export function createDataDef(
           })
 
           def.subDefinitions = {}
+
           addObjectPropertiesToDataDef(
             def,
             consolidatedSchema,
@@ -715,6 +738,30 @@ export function createDataDef(
             oas
           )
 
+          anyOfData.allProperties.forEach(properties => {
+            Object.keys(properties).forEach(propertyName => {
+              if (!incompatibleProperties.has(propertyName)) {
+                // Dereferenced by processing anyOfData
+                const propertySchema = properties[propertyName] as SchemaObject
+
+                const subDefinition = createDataDef(
+                  {
+                    fromRef: propertyName,
+                    fromSchema: propertySchema.title // TODO: Currently not utilized because of fromRef but arguably, propertyKey is a better field name and title is a better type name
+                  },
+                  propertySchema,
+                  isInputObjectType,
+                  data,
+                  undefined,
+                  oas
+                )
+
+                // Add field type references
+                def.subDefinitions[propertyName] = subDefinition
+              }
+            })
+          })
+
           //  Add in incompatible properties
           incompatibleProperties.forEach(propertyName => {
             //  TODO: add description
@@ -723,6 +770,7 @@ export function createDataDef(
             }
           })
 
+          def.targetGraphQLType = 'object'
           return def
         } else {
           // The parent schema is incompatible with the member schemas
@@ -1034,8 +1082,12 @@ function collapseAllOf(
     }
   }
 
-  // Added due to Typescript typing issues
-  const collapsedSchema: SchemaObject = schema
+  /**
+   * TODO: store consolidated collapsed schema
+   *
+   * Added due to Typescript typing issues
+   */
+  const collapsedSchema: SchemaObject = JSON.parse(JSON.stringify(schema))
 
   // Resolve allOf
   if (Array.isArray(collapsedSchema.allOf)) {
@@ -1064,7 +1116,10 @@ function collapseAllOf(
             if (propertyName in collapsedSchema) {
               // TODO: throw error conflicting property
             } else {
-              collapsedSchema.properties[propertyName] = property
+              // TODO: store consolidated collapsed schema
+              collapsedSchema.properties[propertyName] = JSON.parse(
+                JSON.stringify(property)
+              )
             }
           }
         )
@@ -1083,9 +1138,10 @@ function collapseAllOf(
         })
       }
     })
+  }
 
-    // Remove allOf because allOf is resolved
-    collapsedSchema.allOf = undefined
+  if (Array.isArray(collapsedSchema.oneOf)) {
+    collapsedSchema.oneOf.forEach(subSchema => {})
   }
 
   return collapsedSchema

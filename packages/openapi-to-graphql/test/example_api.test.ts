@@ -1523,14 +1523,13 @@ test('Content property in parameter object', () => {
   })
 })
 
-// TODO: Change trashcans2 to trashcans
 test('Handle objects without defined properties with arbitrary GraphQL JSON type', () => {
   const query = `{
     trashcan(username:"arlene") {
       brand,
       contents
     }
-    trashcans2 {
+    trashcans {
       contents
     }
   }`
@@ -1551,7 +1550,7 @@ test('Handle objects without defined properties with arbitrary GraphQL JSON type
             }
           ]
         },
-        trashcans2: [
+        trashcans: [
           {
             contents: [
               {
@@ -1591,7 +1590,7 @@ test('Handle objects without defined properties with arbitrary GraphQL JSON type
 
 test('Handle input objects without defined properties with arbitrary GraphQL JSON type', () => {
   const query = `mutation {
-    postOfficeTrashCan(trashcansInput: {
+    postOfficeTrashCan(trashcans2Input: {
       type: "sandwich",
       message: "moldy",
       tasteRating: 0

@@ -118,20 +118,20 @@ function createOrReuseOt({ def, operation, data, iteration, isInputObjectType })
         : 'No description available.';
     /**
      * If the schema does not contain any properties, then OpenAPI-to-GraphQL
-     * cannot create a GraphQL object type for it because in GraphQL, all Object
-     * Type properties must be named.
+     * cannot create a GraphQL object type for it because in GraphQL, all object
+     * type properties must be named.
      *
      * Instead, store response in an arbitray JSON type.
      */
     if (typeof def.schema.properties === 'undefined' &&
-        typeof def.schema.allOf === 'undefined' // allOf can provide all the properties
-    // TODO: Add oneOf and anyOf
-    ) {
+        typeof def.schema.allOf === 'undefined' && // allOf can provide all the properties
+        typeof def.schema.oneOf === 'undefined' &&
+        typeof def.schema.anyOf === 'undefined') {
         utils_1.handleWarning({
             typeKey: 'OBJECT_MISSING_PROPERTIES',
             message: `The operation ` +
                 `'${operation.operationString}' contains ` +
-                `a object schema ${JSON.stringify(def)} with no properties. ` +
+                `an object schema ${JSON.stringify(def)} with no properties. ` +
                 `GraphQL objects must have well-defined properties so a one to ` +
                 `one conversion cannot be achieved.`,
             data,
