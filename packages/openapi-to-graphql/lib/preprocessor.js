@@ -357,7 +357,7 @@ function createDataDef(names, schema, isInputObjectType, data, links, oas) {
         // Else, define a new name, store the def, and return it
         const name = getSchemaName(data.usedOTNames, names);
         // Store and sanitize the name
-        const saneName = Oas3Tools.capitalize(Oas3Tools.sanitizeAndStore(name, data.saneMap));
+        const saneName = Oas3Tools.capitalize(Oas3Tools.sanitizeAndStore(name, data.saneMap, data.options.simpleFieldNames));
         const saneInputName = Oas3Tools.capitalize(saneName + 'Input');
         // Determine the type of the schema
         const type = Oas3Tools.getSchemaType(schema, data);

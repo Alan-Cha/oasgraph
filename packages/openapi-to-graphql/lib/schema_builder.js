@@ -300,7 +300,7 @@ function createFields({ def, links, operation, data, iteration, isInputObjectTyp
             def.schema.required.includes(fieldTypeKey);
         // Finally, add the object type to the fields (using sanitized field name)
         if (objectType) {
-            const sanePropName = Oas3Tools.sanitizeAndStore(fieldTypeKey, data.saneMap);
+            const sanePropName = Oas3Tools.sanitizeAndStore(fieldTypeKey, data.saneMap, data.options.simpleFieldNames);
             fields[sanePropName] = {
                 type: reqMutationProp
                     ? new graphql_1.GraphQLNonNull(objectType)

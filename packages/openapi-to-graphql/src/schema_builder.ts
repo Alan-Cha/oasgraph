@@ -190,10 +190,10 @@ function createOrReuseOt({
             ? ` (for operation '${operation.operationId}')`
             : '')
       )
-      return def.ot as (
+      return def.ot as
         | GraphQLObjectType
         | GraphQLInputObjectType
-        | GraphQLScalarType)
+        | GraphQLScalarType
     }
 
     // CASE: mutation - reuse input object type
@@ -468,8 +468,10 @@ function createFields({
     if (objectType) {
       const sanePropName = Oas3Tools.sanitizeAndStore(
         fieldTypeKey,
-        data.saneMap
+        data.saneMap,
+        data.options.simpleFieldNames
       )
+
       fields[sanePropName] = {
         type: reqMutationProp
           ? new GraphQLNonNull(objectType)

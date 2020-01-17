@@ -35,6 +35,13 @@ export declare type Options = {
      */
     operationIdFieldNames?: boolean;
     /**
+     * By default, field names are sanitized to conform to OpenAPI specifications
+     * (Camel case, pascal case, or upper case snake).
+     *
+     * This option tells OpenAPI-to-GraphQL to sanitize fieldNames but not change their case.
+     */
+    simpleFieldNames?: boolean;
+    /**
      * Under certain circumstances (such as response code 204), some RESTful
      * operations should not return any data. However, GraphQL objects must have
      * a data structure. Normally, these operations would be ignored but for the
@@ -160,6 +167,13 @@ export declare type InternalOptions = {
      * operationId.
      */
     operationIdFieldNames: boolean;
+    /**
+     * By default, field names are sanitized to conform to OpenAPI specifications
+     * (Camel case, pascal case, or upper case snake).
+     *
+     * This option tells OpenAPI-to-GraphQL to sanitize fieldNames but not change their case.
+     */
+    simpleFieldNames?: boolean;
     /**
      * Under certain circumstances (such as response code 204), some RESTful
      * operations should not return any data. However, GraphQL objects must have

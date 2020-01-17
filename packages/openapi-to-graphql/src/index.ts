@@ -77,6 +77,10 @@ export async function createGraphQlSchema(
     typeof options.operationIdFieldNames === 'boolean'
       ? options.operationIdFieldNames
       : false
+  options.simpleFieldNames =
+    typeof options.simpleFieldNames === 'boolean'
+      ? options.simpleFieldNames
+      : false
   options.fillEmptyResponses =
     typeof options.fillEmptyResponses === 'boolean'
       ? options.fillEmptyResponses
@@ -153,6 +157,7 @@ async function translateOpenApiToGraphQL(
 
     // Schema options
     operationIdFieldNames,
+    simpleFieldNames,
     fillEmptyResponses,
     addLimitArgument,
     idFormats,
@@ -180,6 +185,7 @@ async function translateOpenApiToGraphQL(
 
     // Schema options
     operationIdFieldNames,
+    simpleFieldNames,
     fillEmptyResponses,
     addLimitArgument,
     idFormats,

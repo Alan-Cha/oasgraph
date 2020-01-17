@@ -283,7 +283,7 @@ function buildUrl(server: ServerObject): string {
  */
 export function sanitizeObjKeys(
   obj: object | Array<any>,
-  exceptions: string[] = []
+  simpleFieldNames: boolean
 ): object | Array<any> {
   const cleanKeys = (obj: object | Array<any>): object | Array<any> => {
     if (obj === null || typeof obj === 'undefined') {
@@ -293,13 +293,14 @@ export function sanitizeObjKeys(
     } else if (typeof obj === 'object') {
       const res: object = {}
       for (let key in obj) {
-        if (!exceptions.includes(key)) {
-          const saneKey = sanitize(key)
-          if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            res[saneKey] = cleanKeys(obj[key])
-          }
+        let saneKey
+        if (simpleFieldNames) {
+          saneKey = simpleSanitize(key)
         } else {
-          res[key] = cleanKeys(obj[key])
+          saneKey = sanitize(key)
+        }
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          res[saneKey] = cleanKeys(obj[key])
         }
       }
       return res
@@ -1060,17 +1061,44 @@ export function sanitize(
 }
 
 /**
+ * Sanitizes a given string.
+ */
+export function simpleSanitize(
+  str: string,
+  lowercaseFirstChar: boolean = true
+): string {
+  /**
+   * Remove all GraphQL unsafe characters
+   *
+   */
+  let sanitized = str.replace(/[^a-zA-Z0-9_]/gi, '')
+
+  // First character should be lowercase
+  if (lowercaseFirstChar) {
+    sanitized = uncapitalize(sanitized)
+  }
+
+  return sanitized
+}
+
+/**
  * Sanitizes the given string and stores the sanitized-to-original mapping in
  * the given mapping.
  */
 export function sanitizeAndStore(
   str: string,
-  mapping: { [key: string]: string }
+  mapping: { [key: string]: string },
+  simpleFieldNames?: boolean
 ): string {
   if (!(typeof mapping === 'object')) {
     throw new Error(`No/invalid mapping passed to sanitizeAndStore`)
   }
-  const clean = sanitize(str)
+  let clean
+  if (simpleFieldNames) {
+    clean = simpleSanitize(str)
+  } else {
+    clean = sanitize(str)
+  }
   if (!clean) {
     throw new Error(`Cannot sanitizeAndStore '${str}'`)
   } else if (clean !== str) {

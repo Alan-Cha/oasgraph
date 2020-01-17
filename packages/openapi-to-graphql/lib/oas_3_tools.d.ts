@@ -63,7 +63,7 @@ export declare function getBaseUrl(operation: Operation): string;
  * Returns object | array where all object keys are sanitized. Keys passed in
  * exceptions are not sanitized.
  */
-export declare function sanitizeObjKeys(obj: object | Array<any>, exceptions?: string[]): object | Array<any>;
+export declare function sanitizeObjKeys(obj: object | Array<any>, simpleFieldNames: boolean): object | Array<any>;
 /**
  * Desanitizes keys in given object by replacing them with the keys stored in
  * the given mapping.
@@ -161,12 +161,16 @@ export declare function getSecurityRequirements(path: string, method: string, se
  */
 export declare function sanitize(str: string, lowercaseFirstChar?: boolean): string;
 /**
+ * Sanitizes a given string.
+ */
+export declare function simpleSanitize(str: string, lowercaseFirstChar?: boolean): string;
+/**
  * Sanitizes the given string and stores the sanitized-to-original mapping in
  * the given mapping.
  */
 export declare function sanitizeAndStore(str: string, mapping: {
     [key: string]: string;
-}): string;
+}, simpleFieldNames?: boolean): string;
 /**
  * Return an object similar to the input object except the keys are all
  * sanitized

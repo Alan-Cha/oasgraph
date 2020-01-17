@@ -204,7 +204,7 @@ function buildUrl(server) {
  * Returns object | array where all object keys are sanitized. Keys passed in
  * exceptions are not sanitized.
  */
-function sanitizeObjKeys(obj, exceptions = []) {
+function sanitizeObjKeys(obj, simpleFieldNames) {
     const cleanKeys = (obj) => {
         if (obj === null || typeof obj === 'undefined') {
             return null;
@@ -215,14 +215,15 @@ function sanitizeObjKeys(obj, exceptions = []) {
         else if (typeof obj === 'object') {
             const res = {};
             for (let key in obj) {
-                if (!exceptions.includes(key)) {
-                    const saneKey = sanitize(key);
-                    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                        res[saneKey] = cleanKeys(obj[key]);
-                    }
+                let saneKey;
+                if (simpleFieldNames) {
+                    saneKey = simpleSanitize(key);
                 }
                 else {
-                    res[key] = cleanKeys(obj[key]);
+                    saneKey = sanitize(key);
+                }
+                if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                    res[saneKey] = cleanKeys(obj[key]);
                 }
             }
             return res;
@@ -830,14 +831,36 @@ function sanitize(str, lowercaseFirstChar = true) {
 }
 exports.sanitize = sanitize;
 /**
+ * Sanitizes a given string.
+ */
+function simpleSanitize(str, lowercaseFirstChar = true) {
+    /**
+     * Remove all GraphQL unsafe characters
+     *
+     */
+    let sanitized = str.replace(/[^a-zA-Z0-9_]/gi, '');
+    // First character should be lowercase
+    if (lowercaseFirstChar) {
+        sanitized = uncapitalize(sanitized);
+    }
+    return sanitized;
+}
+exports.simpleSanitize = simpleSanitize;
+/**
  * Sanitizes the given string and stores the sanitized-to-original mapping in
  * the given mapping.
  */
-function sanitizeAndStore(str, mapping) {
+function sanitizeAndStore(str, mapping, simpleFieldNames) {
     if (!(typeof mapping === 'object')) {
         throw new Error(`No/invalid mapping passed to sanitizeAndStore`);
     }
-    const clean = sanitize(str);
+    let clean;
+    if (simpleFieldNames) {
+        clean = simpleSanitize(str);
+    }
+    else {
+        clean = sanitize(str);
+    }
     if (!clean) {
         throw new Error(`Cannot sanitizeAndStore '${str}'`);
     }

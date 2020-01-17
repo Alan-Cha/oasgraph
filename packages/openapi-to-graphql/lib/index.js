@@ -39,6 +39,10 @@ function createGraphQlSchema(spec, options) {
             typeof options.operationIdFieldNames === 'boolean'
                 ? options.operationIdFieldNames
                 : false;
+        options.simpleFieldNames =
+            typeof options.simpleFieldNames === 'boolean'
+                ? options.simpleFieldNames
+                : false;
         options.fillEmptyResponses =
             typeof options.fillEmptyResponses === 'boolean'
                 ? options.fillEmptyResponses
@@ -100,7 +104,7 @@ exports.createGraphQlSchema = createGraphQlSchema;
  */
 function translateOpenApiToGraphQL(oass, { strict, report, 
 // Schema options
-operationIdFieldNames, fillEmptyResponses, addLimitArgument, idFormats, 
+operationIdFieldNames, simpleFieldNames, fillEmptyResponses, addLimitArgument, idFormats, 
 // Resolver options
 headers, qs, requestOptions, baseUrl, customResolvers, 
 // Authentication options
@@ -113,6 +117,7 @@ provideErrorExtensions, equivalentToMessages }) {
             report,
             // Schema options
             operationIdFieldNames,
+            simpleFieldNames,
             fillEmptyResponses,
             addLimitArgument,
             idFormats,

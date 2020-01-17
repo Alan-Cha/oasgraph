@@ -474,7 +474,11 @@ export function createDataDef(
 
     // Store and sanitize the name
     const saneName = Oas3Tools.capitalize(
-      Oas3Tools.sanitizeAndStore(name, data.saneMap)
+      Oas3Tools.sanitizeAndStore(
+        name,
+        data.saneMap,
+        data.options.simpleFieldNames
+      )
     )
     const saneInputName = Oas3Tools.capitalize(saneName + 'Input')
 

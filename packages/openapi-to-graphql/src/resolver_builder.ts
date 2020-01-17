@@ -410,7 +410,10 @@ export function getResolver({
                 resolveData.responseHeaders = response.headers
 
                 // Deal with the fact that the server might send unsanitized data
-                let saneData = Oas3Tools.sanitizeObjKeys(responseBody)
+                let saneData = Oas3Tools.sanitizeObjKeys(
+                  responseBody,
+                  data.options.simpleFieldNames
+                )
 
                 // Pass on _openapiToGraphql to subsequent resolvers
                 if (saneData && typeof saneData === 'object') {
