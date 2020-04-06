@@ -98,7 +98,6 @@ export async function createGraphQLSchema(
     typeof options.genericPayloadArgName === 'boolean'
       ? options.genericPayloadArgName
       : false
-
   options.createSubscriptionsFromCallbacks =
     typeof options.createSubscriptionsFromCallbacks === 'boolean'
       ? options.createSubscriptionsFromCallbacks

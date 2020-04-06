@@ -130,10 +130,10 @@ export declare type Options = {
         };
     };
     /**
-     * Allow to generate subscription fields from CallbackObjects in OpenAPI schema.
+     * Allow to generate subscription fields from callback objects in the OAS.
      *
-     * Path ( runtime expression ) of the CallbackObject will be interpolated,
-     * as topic of publish / subscription to use with a pubsub instance.
+     * The keys (runtime expressions) of the callback object will be interpolated
+     * as the topic of publish/subscription connection.
      */
     createSubscriptionsFromCallbacks?: boolean;
     /**
@@ -284,12 +284,12 @@ export declare type InternalOptions = {
         };
     };
     /**
-     * Allow to generate subscription fields from CallbackObjects in OpenAPI schema.
+     * Allow to generate subscription fields from callback objects in the OAS.
      *
-     * Path ( runtime expression ) of the CallbackObject will be interpolated,
-     * as topic of publish / subscription to use with a pubsub instance.
+     * The keys (runtime expressions) of the callback object will be interpolated
+     * as the topic of publish/subscription connection.
      */
-    createSubscriptionsFromCallbacks?: boolean;
+    createSubscriptionsFromCallbacks: boolean;
     /**
      * Determines whether OpenAPI-to-GraphQL should create viewers that allow users to pass
      * basic auth and API key credentials.
