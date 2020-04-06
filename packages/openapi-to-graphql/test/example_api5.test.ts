@@ -16,7 +16,7 @@ import { startServers, stopServers } from './example_api5_server'
 
 const oas = require('./fixtures/example_oas5.json')
 
-const TEST_PORT = 3000
+const TEST_PORT = 3009
 const HTTP_PORT = 3008
 const MQTT_PORT = 1885
 
@@ -26,6 +26,8 @@ oas.servers[0].variables.port.default = String(HTTP_PORT)
 let createdSchema
 let wsServer
 let mqttClient
+let subscriptionServer
+
 /**
  * Set up the schema first and run example API servers
  */
@@ -59,7 +61,8 @@ beforeAll(() => {
         })
 
         wsServer.listen(TEST_PORT)
-        new SubscriptionServer(
+
+        subscriptionServer = new SubscriptionServer(
           {
             execute,
             subscribe,
@@ -74,6 +77,9 @@ beforeAll(() => {
             path: '/subscriptions'
           }
         )
+      })
+      .catch(e => {
+        console.log('error', e)
       }),
     startServers(HTTP_PORT, MQTT_PORT)
   ])
@@ -83,9 +89,12 @@ beforeAll(() => {
  * Shut down API servers
  */
 afterAll(() => {
-  mqttClient.end()
-  wsServer.close()
-  return stopServers()
+  return Promise.all([
+    subscriptionServer.close(),
+    wsServer.close(),
+    mqttClient.end(),
+    stopServers()
+  ])
 })
 
 test('Receive data from the subscription after creating a new instance', () => {
@@ -113,9 +122,9 @@ test('Receive data from the subscription after creating a new instance', () => {
       `ws://localhost:${TEST_PORT}/subscriptions`
     )
 
-    client.onError(err => reject)
+    client.onError(e => reject(e))
 
-    let sub = client
+    client
       .request({
         query,
         operationName: 'watchDevice',
@@ -160,6 +169,6 @@ test('Receive data from the subscription after creating a new instance', () => {
           }
         })
         .catch(reject)
-    }, 400)
+    }, 500)
   })
-}, 7000)
+})

@@ -55,12 +55,12 @@ function startServers(HTTP_PORT, MQTT_PORT) {
   })
 
   app.get('/api/devices', (req, res) => {
-    console.log('HTTP Request ', req.method, req.path)
+    console.log('HTTP Request', req.method, req.path)
     res.status(200).send(Object.values(Devices))
   })
 
   app.post('/api/devices', (req, res) => {
-    console.log('HTTP Request ', req.method, req.path)
+    console.log('HTTP Request', req.method, req.path)
     if (req.body.userName && req.body.name) {
       const device = req.body
       Devices[device.name] = device
@@ -80,7 +80,7 @@ function startServers(HTTP_PORT, MQTT_PORT) {
   })
 
   app.get('/api/devices/:deviceName', (req, res) => {
-    console.log('HTTP Request ', req.method, req.path, req.params)
+    console.log('HTTP Request', req.method, req.path, req.params)
     if (req.params.deviceName in Devices) {
       res.status(200).send(Devices[req.params.deviceName])
     } else {
@@ -91,7 +91,7 @@ function startServers(HTTP_PORT, MQTT_PORT) {
   })
 
   app.put('/api/devices/:deviceName', (req, res) => {
-    console.log('HTTP Request ', req.method, req.path, req.params)
+    console.log('HTTP Request', req.method, req.path, req.params)
     if (req.params.deviceName in Devices) {
       if (req.body.userName && req.body.name) {
         const device = req.body

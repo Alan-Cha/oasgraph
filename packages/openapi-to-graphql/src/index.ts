@@ -39,7 +39,7 @@ import {
 } from './types/options'
 import { Oas3, CallbackObject } from './types/oas3'
 import { Oas2 } from './types/oas2'
-import { Args, Field } from './types/graphql'
+import { Args, Field, GraphQLOperationType } from './types/graphql'
 import { Operation } from './types/operation'
 import { PreprocessingData } from './types/preprocessing_data'
 import { GraphQLSchema, GraphQLObjectType } from 'graphql'
@@ -249,8 +249,7 @@ async function translateOpenAPIToGraphQL(
   let authMutationFields = {}
   let authSubscriptionFields = {}
 
-  // todo parse data.callbacks to recompose subscription ?
-
+  // Add Query and Mutation operations
   Object.entries(data.operations).forEach(([operationId, operation]) => {
     translationLog(`Process operation '${operationId}'...`)
 
@@ -267,8 +266,8 @@ async function translateOpenAPIToGraphQL(
       Oas3Tools.CaseStyle.camelCase
     )
 
-    // Check if the operation should be added as a Query | Mutation | Subscription field
-    if (!operation.isMutation && !operation.isSubscription) {
+    // Check if the operation should be added as a Query or Mutation
+    if (operation.operationType === GraphQLOperationType.Query) {
       let fieldName = Oas3Tools.uncapitalize(
         operation.responseDefinition.graphQLTypeName
       )
@@ -341,7 +340,7 @@ async function translateOpenAPIToGraphQL(
           queryFields[fieldName] = field
         }
       }
-    } else if (operation.isMutation && !operation.isSubscription) {
+    } else {
       /**
        * Use operationId to avoid problems differentiating operations with the
        * same path but different methods
@@ -390,7 +389,27 @@ async function translateOpenAPIToGraphQL(
           mutationFields[saneFieldName] = field
         }
       }
-    } else if (operation.isSubscription) {
+    }
+  })
+
+  // Add Subscription operations
+  Object.entries(data.callbackOperations).forEach(
+    ([operationId, operation]) => {
+      translationLog(`Process operation '${operationId}'...`)
+
+      let field = getFieldForOperation(
+        operation,
+        options.baseUrl,
+        data,
+        requestOptions,
+        connectOptions
+      )
+
+      const saneOperationId = Oas3Tools.sanitize(
+        operationId,
+        Oas3Tools.CaseStyle.camelCase
+      )
+
       // handle subscriptions from operation.callbacks
       // 1) cbName would be the subscription field name
       // each paths contained in operation.callbacks[cbName]
@@ -448,7 +467,7 @@ async function translateOpenAPIToGraphQL(
         }
       }
     }
-  })
+  )
 
   // Sorting fields
   queryFields = sortObject(queryFields)
@@ -494,21 +513,29 @@ async function translateOpenAPIToGraphQL(
   if (Object.keys(authQueryFields).length > 0) {
     Object.assign(
       queryFields,
-      createAndLoadViewer(authQueryFields, data, false, false)
+      createAndLoadViewer(authQueryFields, GraphQLOperationType.Query, data)
     )
   }
 
   if (Object.keys(authMutationFields).length > 0) {
     Object.assign(
       mutationFields,
-      createAndLoadViewer(authMutationFields, data, true, false)
+      createAndLoadViewer(
+        authMutationFields,
+        GraphQLOperationType.Mutation,
+        data
+      )
     )
   }
 
   if (Object.keys(authSubscriptionFields).length > 0) {
     Object.assign(
       subscriptionFields,
-      createAndLoadViewer(authSubscriptionFields, data, true, true)
+      createAndLoadViewer(
+        authSubscriptionFields,
+        GraphQLOperationType.Subscription,
+        data
+      )
     )
   }
 
@@ -597,7 +624,7 @@ function getFieldForOperation(
     data
   })
 
-  if (operation.isSubscription) {
+  if (operation.operationType === GraphQLOperationType.Subscription) {
     const responseSchemaName = operation.responseDefinition
       ? operation.responseDefinition.graphQLTypeName
       : null
@@ -623,20 +650,21 @@ function getFieldForOperation(
       args,
       description: operation.description
     }
-  }
+  } else {
+    const resolve = getResolver({
+      operation,
+      payloadName: payloadSchemaName,
+      data,
+      baseUrl,
+      requestOptions
+    })
 
-  const resolve = getResolver({
-    operation,
-    payloadName: payloadSchemaName,
-    data,
-    baseUrl,
-    requestOptions
-  })
-  return {
-    type,
-    resolve,
-    args,
-    description: operation.description
+    return {
+      type,
+      resolve,
+      args,
+      description: operation.description
+    }
   }
 }
 

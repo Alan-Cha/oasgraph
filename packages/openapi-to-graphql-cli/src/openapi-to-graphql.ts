@@ -52,7 +52,7 @@ program
   )
   .option(
     '-g, --genericPayloadArgName',
-    'Sets argument name for the payload of a mutation to \'requestBody\''
+    "Sets argument name for the payload of a mutation to 'requestBody'"
   )
 
   // Resolver options
@@ -275,7 +275,7 @@ function startGraphQLServer(
       }
     })
     .catch(err => {
-      console.log('OpenAPI-to-GraphQL creation event error: ', err.message)
+      console.log('OpenAPI-to-GraphQL creation event error:', err.message)
     })
 }
 
