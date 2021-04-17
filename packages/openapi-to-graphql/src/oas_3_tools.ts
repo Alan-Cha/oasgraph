@@ -575,6 +575,8 @@ export function getRequestBodyObject(
     // Prioritize content-type JSON
     if ('application/json' in content) {
       payloadContentType = 'application/json'
+    } else if ('*/*' in content) {
+      payloadContentType = '*/*'
     } else if ('application/x-www-form-urlencoded' in content) {
       payloadContentType = 'application/x-www-form-urlencoded'
     } else {
@@ -642,6 +644,7 @@ export function getRequestSchemaAndNames(
   if (
     typeof payloadContentType === 'string' &&
     payloadContentType !== 'application/json' &&
+    payloadContentType !== '*/*' &&
     payloadContentType !== 'application/x-www-form-urlencoded'
   ) {
     const saneContentTypeName = uncapitalize(
@@ -702,6 +705,8 @@ export function getResponseObject(
     // Prioritize content-type JSON
     if ('application/json' in content) {
       responseContentType = 'application/json'
+    } else if ('*/*' in content) {
+      responseContentType = '*/*'
     } else {
       // Pick first (random) content type
       const randomContentType = Object.keys(content)[0]
@@ -780,7 +785,8 @@ export function getResponseSchemaAndNames<TSource, TContext, TArgs>(
    */
   if (
     typeof responseContentType === 'string' &&
-    responseContentType !== 'application/json'
+    responseContentType !== 'application/json' &&
+    responseContentType !== '*/*'
   ) {
     let description =
       'Placeholder to access non-application/json response bodies'

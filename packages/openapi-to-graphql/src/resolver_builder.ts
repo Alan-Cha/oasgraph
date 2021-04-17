@@ -489,24 +489,15 @@ export function getResolver<TSource, TContext, TArgs>({
     )
     const url = baseUrl + path
 
-    /**
-     * The Content-Type and Accept property should not be changed because the
-     * object type has already been created and unlike these properties, it
-     * cannot be easily changed
-     *
-     * NOTE: This may cause the user to encounter unexpected changes
-     */
-    if (operation.method !== Oas3Tools.HTTP_METHODS.get) {
-      headers['content-type'] =
-        typeof operation.payloadContentType !== 'undefined'
-          ? operation.payloadContentType
-          : 'application/json'
-    }
+    headers['content-type'] =
+      operation.payloadContentType === '*/*'
+        ? 'application/json'
+        : operation.payloadContentType
 
-    headers['accept'] =
-      typeof operation.responseContentType !== 'undefined'
-        ? operation.responseContentType
-        : 'application/json'
+    headers.accept =
+      operation.responseContentType === '*/*'
+        ? 'application/json'
+        : operation.responseContentType
 
     let options: NodeRequest.OptionsWithUrl
     if (requestOptions) {
@@ -567,12 +558,17 @@ export function getResolver<TSource, TContext, TArgs>({
         : Oas3Tools.sanitize(payloadName, Oas3Tools.CaseStyle.camelCase)
 
       let rawPayload
-      if (operation.payloadContentType === 'application/json') {
+      if (
+        operation.payloadContentType.includes('application/json') ||
+        operation.payloadContentType.includes('*/*')
+      ) {
         rawPayload = JSON.stringify(
           Oas3Tools.desanitizeObjectKeys(args[sanePayloadName], data.saneMap)
         )
       } else if (
-        operation.payloadContentType === 'application/x-www-form-urlencoded'
+        operation.payloadContentType.includes(
+          'application/x-www-form-urlencoded'
+        )
       ) {
         rawPayload = formurlencoded(
           Oas3Tools.desanitizeObjectKeys(args[sanePayloadName], data.saneMap)

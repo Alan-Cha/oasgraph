@@ -284,23 +284,14 @@ function getResolver({ operation, argsFromLink = {}, payloadName, data, baseUrl,
         // Build URL (i.e., fill in path parameters):
         const { path, qs, headers } = extractRequestDataFromArgs(operation.path, operation.parameters, args, data);
         const url = baseUrl + path;
-        /**
-         * The Content-Type and Accept property should not be changed because the
-         * object type has already been created and unlike these properties, it
-         * cannot be easily changed
-         *
-         * NOTE: This may cause the user to encounter unexpected changes
-         */
-        if (operation.method !== Oas3Tools.HTTP_METHODS.get) {
-            headers['content-type'] =
-                typeof operation.payloadContentType !== 'undefined'
-                    ? operation.payloadContentType
-                    : 'application/json';
-        }
-        headers['accept'] =
-            typeof operation.responseContentType !== 'undefined'
-                ? operation.responseContentType
-                : 'application/json';
+        headers['content-type'] =
+            operation.payloadContentType === '*/*' ?
+                'application/json' :
+                operation.payloadContentType;
+        headers.accept =
+            operation.responseContentType === '*/*' ?
+                'application/json' :
+                operation.responseContentType;
         let options;
         if (requestOptions) {
             options = Object.assign(Object.assign({}, requestOptions), { method: operation.method, url // Must be after the requestOptions spread as url is a mandatory field so undefined may be used
@@ -355,10 +346,11 @@ function getResolver({ operation, argsFromLink = {}, payloadName, data, baseUrl,
                 ? 'requestBody'
                 : Oas3Tools.sanitize(payloadName, Oas3Tools.CaseStyle.camelCase);
             let rawPayload;
-            if (operation.payloadContentType === 'application/json') {
+            if (operation.payloadContentType.includes('application/json') ||
+                operation.payloadContentType.includes('*/*')) {
                 rawPayload = JSON.stringify(Oas3Tools.desanitizeObjectKeys(args[sanePayloadName], data.saneMap));
             }
-            else if (operation.payloadContentType === 'application/x-www-form-urlencoded') {
+            else if (operation.payloadContentType.includes('application/x-www-form-urlencoded')) {
                 rawPayload = form_urlencoded_1.default(Oas3Tools.desanitizeObjectKeys(args[sanePayloadName], data.saneMap));
             }
             else {

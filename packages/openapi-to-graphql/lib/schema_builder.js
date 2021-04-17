@@ -815,6 +815,7 @@ function getArgs({ requestPayloadDef, parameters, operation, data }) {
     let args = {};
     // Handle params:
     parameters.forEach((parameter) => {
+        var _a, _b, _c, _d;
         // We need at least a name
         if (typeof parameter.name !== 'string') {
             utils_1.handleWarning({
@@ -841,9 +842,12 @@ function getArgs({ requestPayloadDef, parameters, operation, data }) {
             schema = parameter.schema;
         }
         else if (typeof parameter.content === 'object') {
-            if (typeof parameter.content['application/json'] === 'object' &&
-                typeof parameter.content['application/json'].schema === 'object') {
-                schema = parameter.content['application/json'].schema;
+            const contentTypes = Object.keys(parameter.content);
+            const jsonContentType = contentTypes.find(contentType => contentType.toString().includes('application/json') || contentType.toString().includes('*/*'));
+            if (jsonContentType &&
+                typeof ((_b = (_a = parameter.content) === null || _a === void 0 ? void 0 : _a[jsonContentType]) === null || _b === void 0 ? void 0 : _b.schema) === 'object' &&
+                ((_d = (_c = parameter.content) === null || _c === void 0 ? void 0 : _c[jsonContentType]) === null || _d === void 0 ? void 0 : _d.schema) !== null) {
+                schema = parameter.content[jsonContentType].schema;
             }
             else {
                 utils_1.handleWarning({

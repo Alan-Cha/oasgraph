@@ -425,6 +425,9 @@ function getRequestBodyObject(operation, oas) {
         if ('application/json' in content) {
             payloadContentType = 'application/json';
         }
+        else if ('*/*' in content) {
+            payloadContentType = '*/*';
+        }
         else if ('application/x-www-form-urlencoded' in content) {
             payloadContentType = 'application/x-www-form-urlencoded';
         }
@@ -477,6 +480,7 @@ function getRequestSchemaAndNames(path, method, operation, oas) {
      */
     if (typeof payloadContentType === 'string' &&
         payloadContentType !== 'application/json' &&
+        payloadContentType !== '*/*' &&
         payloadContentType !== 'application/x-www-form-urlencoded') {
         const saneContentTypeName = uncapitalize(payloadContentType.split('/').reduce((name, term) => {
             return name + capitalize(term);
@@ -522,6 +526,9 @@ function getResponseObject(operation, statusCode, oas) {
         // Prioritize content-type JSON
         if ('application/json' in content) {
             responseContentType = 'application/json';
+        }
+        else if ('*/*' in content) {
+            responseContentType = '*/*';
         }
         else {
             // Pick first (random) content type
@@ -582,7 +589,8 @@ function getResponseSchemaAndNames(path, method, operation, oas, data, options) 
      * parse.
      */
     if (typeof responseContentType === 'string' &&
-        responseContentType !== 'application/json') {
+        responseContentType !== 'application/json' &&
+        responseContentType !== '*/*') {
         let description = 'Placeholder to access non-application/json response bodies';
         if (typeof (responseSchema === null || responseSchema === void 0 ? void 0 : responseSchema.description) === 'string') {
             description += `\n\nOriginal top level description: '${responseSchema.description}'`;
